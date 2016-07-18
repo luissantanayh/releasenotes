@@ -11,6 +11,12 @@
 \usepackage[T1]{fontenc}
 %--------------------------------------
 
+%colors
+%--------------------------------------
+\usepackage[usenames, dvipsnames]{color}
+%--------------------------------------
+
+
 %images
 %--------------------------------------
 \usepackage{graphicx}
@@ -24,7 +30,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %ALTERAR AQUI A VERSÃO DO DIGESTOR!!!!!
-\newcommand{\versiondigester}{v1.0.0.5}
+\newcommand{\versiondigester}{v1.0.0.7}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Header and footer commands
@@ -83,7 +89,9 @@
 1.0.0.2           & 30/06/2016    & Bugfixes e limpeza              & Rosemary Sumitani                                    \\ \hline
 1.0.0.3           & 04/07/2016    & Testes Unitários, bugfixes      & Danilo e Rosemary                                    \\ \hline
 1.0.0.4           & 07/07/2016    & Parser Daruma, Bugfixes         & Luis, Danilo e Rosemary                              \\ \hline
-1.0.0.5           & 17/07/2016    & Bugfixes Parser Daruma           & Luis Sant'Ana                                        \\ \hline
+1.0.0.5           & 17/07/2016    & Bugfixes Parser Daruma          & Luis Sant'Ana                                        \\ \hline
+1.0.0.6           & 14/07/2016    & BugFixes Parser Daruma          & Luis Sant'Ana                                        \\ \hline  
+1.0.0.7           & 18/07/2016    & BugFixes Troca Impressoras      & Luis e Danilo                                        \\ \hline  
 \end{tabular}
 \end{table}
 
@@ -95,27 +103,22 @@ Este documento tem o objetivo de descrever as alterações nas funcionalidades d
 
 
 \section{Introdução}     
-Nesta versão foi corrigido problemas encontrados no Parser Daruma. 
+Nesta versão foi corrigido problemas encontrados quando trocamos de impressoras.
 
 \section{O que mudou?}
-Esta versão contém as seguintes novidades:
 
-Nenhuma novidade em relação à versão anterior.
+Nenhuma novidade em relação à versão anterior, apenas correções de \emph{bugs}.
 
 \subsection{Bug fixes}
 \begin{itemize}
-    \item Cupom cancelado não está na lista de cupom.csv - Problema na lógica de fechamento do pagamento.
-    \item CPF e CNPJ não estão na lista. Problema na lógica de inserção no objeto sale.
-    \item CCF e CNPJ trocados. Inversão dos campos. 
-    \item Valor total do Cupom pode estar errado. Troca de tipo de variável para aumento de precisão.
-    \item Forma de pagamento apresenta cartão débito, porém foi em dinheiro. Tratamento do comando, agora exibimos o código do tipo de pagamento, onde 01 é dinheiro.
-    \item Erro no frente de caixa aparece no cupom.csv. Adição de lógica de verificação.
-    \item O primeiro cupom coletado para Daruma não apresenta informação dentro do arquivo pag.csv. Problema corrigido através do correto fechamento do pagamento. 
+    \item \colorbox{BurntOrange}{COO errado para Epson}. Problema relacionado ao processo de coleta. 
+    \item Não coleta Bematech. Não estava trocando de impressora, porque não estava sendo chamado o parser correto de cada impressora.
+    \item Uma mudança da impressora Sweda para a impressora Epson não foi realizada, porém mostra que foi. Resolvida com a alteração do item anterior, mesmo assim este problema não tem impacto na qualidade dos dados.
 \end{itemize}
 
 
 \section{Limitações}
-Sem limitações a princípio.
+Nenhuma limitação a princípio.
 
 \section{Como funciona?}
 
@@ -139,10 +142,7 @@ O programa digere os dados da pasta \textbf{Cupons/processar (.NS)} e o resultad
 \section{Sugestão de testes}
 
 \begin{itemize}
-    \item Reprocesamento dos cupons Daruma.
-    \item Troca de ECFs com venda de item.
-    \item Troca de ECFs sem venda de item.
-    \item Reprocessamento dos cupons Epson.
+    \item Reprocessamento dos cupons Epson. Com especial atenção para o COO incorreto que NÃO é bug do digester.
     \item Reprocessamento de cupons Sweda.
 \end{itemize}
 
