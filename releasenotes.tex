@@ -93,6 +93,7 @@
 1.0.0.6           & 14/07/2016    & BugFixes Parser Daruma          & Luis Sant'Ana                                        \\ \hline  
 1.0.0.7           & 18/07/2016    & BugFixes Troca Impressoras      & Luis e Danilo                                        \\ \hline
 1.0.0.8           & 29/07/2016    & Bugfixes                        & Yandeh Team                                          \\ \hline
+1.0.0.9           & 01/08/2016    & Parser SAT                      & Luis Sant'Ana                                        \\ \hline
 \end{tabular}
 \end{table}
 
@@ -104,20 +105,11 @@ Este documento tem o objetivo de descrever as alterações nas funcionalidades d
 
 
 \section{Introdução}     
-Nesta versão foram corrigidos vários problemas, detectados quando tentamos subir o arquivo CSV para o banco de dados. 
+Nesta versão foi adicionado a implementação do Parser para equipamentos SAT.
 
 \section{O que mudou?}
 
-Nenhuma novidade em relação à versão anterior, apenas correções de \emph{bugs}.
-
-\subsection{Bug fixes}
-\begin{itemize}
-    \item Tratamento de data de fechamento de venda com formato inesperado. Foi realizado o tratamento para retornar vazio, caso não seja possível fechar a venda.  
-    \item Quando uma linha qualquer do arquivo de entrada $.NS$ termina com $\#\#$, o Digester termina a execução de forma inesperada. Foi adicionado um tratamento para não realizar o \emph{escape} duas vezes.
-    \item CNPJs com versões do coletor desatualizadas geram saidas mal formadas. Foi feito a exclusão dos CNPJs problemáticos em um dos scripts de execução.
-    \item CCF com formato inesperado para o modelo Daruma. Foi realizado o tratamento com checagem do código.
-\end{itemize}
-
+Todas as correções e funcionalidades anteriores, mais a implementação do Parser SAT. 
 
 \section{Limitações}
 Nenhuma limitação a princípio.
@@ -144,7 +136,8 @@ O programa digere os dados da pasta \textbf{Cupons/processar (.NS)} e o resultad
 \section{Sugestão de testes}
 
 \begin{itemize}
-    \item Reprocessamento do mês de Julho e tentativa de carregamento do arquivo de saída junto ao banco de dados.
+    \item Processamento e avaliação completa de arquivos SAT. 
+    \item Testes integrados com ECF.
 \end{itemize}
 
 \end{document}               % End of document.
