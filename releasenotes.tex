@@ -30,7 +30,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %ALTERAR AQUI A VERSÃO DO DIGESTOR!!!!!
-\newcommand{\versiondigester}{v1.0.0.7}
+\newcommand{\versiondigester}{v1.0.0.8}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Header and footer commands
@@ -91,7 +91,8 @@
 1.0.0.4           & 07/07/2016    & Parser Daruma, Bugfixes         & Luis, Danilo e Rosemary                              \\ \hline
 1.0.0.5           & 17/07/2016    & Bugfixes Parser Daruma          & Luis Sant'Ana                                        \\ \hline
 1.0.0.6           & 14/07/2016    & BugFixes Parser Daruma          & Luis Sant'Ana                                        \\ \hline  
-1.0.0.7           & 18/07/2016    & BugFixes Troca Impressoras      & Luis e Danilo                                        \\ \hline  
+1.0.0.7           & 18/07/2016    & BugFixes Troca Impressoras      & Luis e Danilo                                        \\ \hline
+1.0.0.8           & 29/07/2016    & Bugfixes                        & Yandeh Team                                          \\ \hline
 \end{tabular}
 \end{table}
 
@@ -103,7 +104,7 @@ Este documento tem o objetivo de descrever as alterações nas funcionalidades d
 
 
 \section{Introdução}     
-Nesta versão foi corrigido problemas encontrados quando trocamos de impressoras.
+Nesta versão foram corrigidos vários problemas, detectados quando tentamos subir o arquivo CSV para o banco de dados. 
 
 \section{O que mudou?}
 
@@ -111,9 +112,10 @@ Nenhuma novidade em relação à versão anterior, apenas correções de \emph{b
 
 \subsection{Bug fixes}
 \begin{itemize}
-    \item \colorbox{BurntOrange}{COO errado para Epson}. Problema relacionado ao processo de coleta. 
-    \item Não coleta Bematech. Não estava trocando de impressora, porque não estava sendo chamado o parser correto de cada impressora.
-    \item Uma mudança da impressora Sweda para a impressora Epson não foi realizada, porém mostra que foi. Resolvida com a alteração do item anterior, mesmo assim este problema não tem impacto na qualidade dos dados.
+    \item Tratamento de data de fechamento de venda com formato inesperado. Foi realizado o tratamento para retornar vazio, caso não seja possível fechar a venda.  
+    \item Quando uma linha qualquer do arquivo de entrada $.NS$ termina com $\#\#$, o Digester termina a execução de forma inesperada. Foi adicionado um tratamento para não realizar o \emph{escape} duas vezes.
+    \item CNPJs com versões do coletor desatualizadas geram saidas mal formadas. Foi feito a exclusão dos CNPJs problemáticos em um dos scripts de execução.
+    \item CCF com formato inesperado para o modelo Daruma. Foi realizado o tratamento com checagem do código.
 \end{itemize}
 
 
@@ -142,8 +144,7 @@ O programa digere os dados da pasta \textbf{Cupons/processar (.NS)} e o resultad
 \section{Sugestão de testes}
 
 \begin{itemize}
-    \item Reprocessamento dos cupons Epson. Com especial atenção para o COO incorreto que NÃO é bug do digester.
-    \item Reprocessamento de cupons Sweda.
+    \item Reprocessamento do mês de Julho e tentativa de carregamento do arquivo de saída junto ao banco de dados.
 \end{itemize}
 
 \end{document}               % End of document.
