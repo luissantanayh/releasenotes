@@ -30,7 +30,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %ALTERAR AQUI A VERSÃO DO DIGESTOR!!!!!
-\newcommand{\versiondigester}{v1.0.0.8}
+\newcommand{\versiondigester}{v1.0.1.0}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Header and footer commands
@@ -94,6 +94,7 @@
 1.0.0.7           & 18/07/2016    & BugFixes Troca Impressoras      & Luis e Danilo                                        \\ \hline
 1.0.0.8           & 29/07/2016    & Bugfixes                        & Yandeh Team                                          \\ \hline
 1.0.0.9           & 01/08/2016    & Parser SAT                      & Luis Sant'Ana                                        \\ \hline
+1.0.1.0           & 04/08/2016    & Bugfixes                        & Luis Sant'Ana                                        \\ \hline
 \end{tabular}
 \end{table}
 
@@ -105,11 +106,65 @@ Este documento tem o objetivo de descrever as alterações nas funcionalidades d
 
 
 \section{Introdução}     
-Nesta versão foi adicionado a implementação do Parser para equipamentos SAT.
+Nesta versão foi realizado correções encotradas durante o processamento de dados advindos de equipamentos ECF e SAT. Do grupo de ECFs apenas foram corrgidas problemas encontrados nos modelos Daruma e Epson.
 
 \section{O que mudou?}
 
-Todas as correções e funcionalidades anteriores, mais a implementação do Parser SAT. 
+Nenhuma novidade em relação à versão anterior, apenas correções de \emph{bugs}.
+
+
+\begin{figure}[!ht]
+  \centering
+    \includegraphics[width=1.0\textwidth]{tabela.PNG}
+    \caption{Erro evidenciado}
+    \label{fig:tabela}
+\end{figure}
+
+\begin{figure}[!ht]
+  \centering
+    \includegraphics[width=0.8\textwidth]{cml.PNG}
+  \caption{Trecho do XML com os códigos de pagamento e valores}
+  \label{fig:xml}
+\end{figure}
+
+\subsection{Correções}
+
+\subsubsection{SAT}
+\begin{itemize}
+\item ConsumidorCpfCnpj – Não está sendo apresentado. Correção realizada através da correta captura da tag no arquivo XML.
+\item CupomValorDesconto - Não está apresentando o valor do desconto. Correção realizada através da correta captura da tag no arquivo XML.
+\item ItemCodigo – Está mostrando um número a mais no código. O campo no arquivo XML está vindo um dígito a mais, o problema provavelmente está associado ao software frente caixa e impressora, que não imprime o último digito no cupom fiscal.
+\item ItemValor – O campo ItemValor está sendo apresentado o valor final do item. Correção realizada capturando a tag vUnCom.
+\item FormaPagamento – Não está apresentando o código de pagamento correto. Na figura \ref{fig:xml} está o trecho do arquivo XML que apresenta as formas de pagamento utilizadas da figura \ref{fig:tabela}. Note que é realizada a captura da forma correta, o que sugere que o problema está relacionado a identificação da forma de pagamento, um problema do software de frente de caixa de classifica o tipo de pagamento de forma errada. A seguir está a identificação de cada código de pagamento extraído do manual de especificação técnica de requisitos do SAT~\cite{sat}: 
+
+\begin{itemize}
+\item 01 - Dinheiro
+\item 02 - Cheque
+\item 03 - Cartão de Crédito
+\item 04 - Cartão de Débito
+\item 05 - Crédito Loja
+\item 10 - Vale Alimentação
+\item 11 - Vale Refeição
+\item 12 - Vale Presente
+\item 13 - Vale Combustível
+\item 99 - Outros
+\end{itemize}
+
+\item Valor – Não mostra o valor após o desconto do cupom. Correção realizada através da correta captura da tag no arquivo XML.
+\end{itemize}
+
+\subsubsection{Daruma}
+\begin{itemize}
+\item FormaPagamento – Não está apresentando no código de pagamento Unknown. Correção realizada alterando o comando de abertura de pagamento.
+\item Os cupons que tem pagamentos realizados em mais de uma forma um dos valores vem zerados ou Unknown. A correção do item anterior resolveu também este item.
+\end{itemize}
+
+\subsubsection{Epson}
+\begin{itemize}
+\item ConsumidorCpfCnpj – Em um dos cupons não está sendo apresentado o CPF do consumidor. Neste cupom em especial o campo CPF veio vazio.
+\item O COO não é o mesmo gerado no Cupom impresso. Este problema é um problema persistente das impressoras Epson, detalhado no realease notes da versão 1.0.0.7.
+\item Existe uma venda que não foi efetuada. Problema no arquivo de coleta, este arquivo termina no meio de uma venda e não há arquivo na sequência.
+\end{itemize}
 
 \section{Limitações}
 Nenhuma limitação a princípio.
@@ -121,23 +176,27 @@ Dentro da estrutura de arquivos (/home/hadoop/Coleta/) existe um arquivo chamado
 \begin{figure}[!ht]
   \centering
     \includegraphics[width=1.0\textwidth]{genericos.png}
-  \label{fig:genericos}
   \caption{Trecho de código a ser alterado}
+    \label{fig:genericos}
 \end{figure}
 
 No exemplo da figura~\ref{fig:genericos} uma vez chamdo o $processa\_genericos.py$ pela linha de comando, processará \textbf{somente} o dia 29 do mês 6 de 2016.
 
 Arquivos de logs com extensão \textbf{.log} serão gerados no mesmo diretório para auxiliar em caso de problemas.
 
-O programa digere os dados da pasta \textbf{Cupons/processar (.NS)} e o resultado da digesão dos dados estarão na pasta \textbf{Cupons/processados (.csv, .pag).}
+O programa digere os dados da pasta \textbf{Cupons/processar (.NS)} e o resultado da digesão dos dados estarão na pasta \textbf{Cupons/processados (.csv, .pag).}.  \footnote{Obs. Sempre que possível cheque se a pasta a ser processada contém os arquivos coletados.}
 
 
 
 \section{Sugestão de testes}
 
 \begin{itemize}
-    \item Processamento e avaliação completa de arquivos SAT. 
-    \item Testes integrados com ECF.
+    \item Reprocessamento dos arquivos de teste, para os equipamentos Daruma e SAT 
+    \item Validação junto ao Banco de Dados.
 \end{itemize}
+
+\begin{thebibliography}{1}
+  \bibitem{sat} {\em Especificação Técnica de Requisitos - SAT. pag. 96}  2016.
+\end{thebibliography}
 
 \end{document}               % End of document.
