@@ -16,6 +16,13 @@
 \usepackage[usenames, dvipsnames]{color}
 %--------------------------------------
 
+%code
+%--------------------------------------
+\usepackage{minted}
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+\newminted{python3}{bgcolor=bg, linenos=true, tabsize=4}
+
+%-------------------------------------
 
 %images
 %--------------------------------------
@@ -30,7 +37,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %ALTERAR AQUI A VERSÃO DO DIGESTOR!!!!!
-\newcommand{\versiondigester}{v1.0.1.0}
+\newcommand{\versiondigester}{v1.0.1.1}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Header and footer commands
@@ -95,6 +102,7 @@
 1.0.0.8           & 29/07/2016    & Bugfixes                        & Yandeh Team                                          \\ \hline
 1.0.0.9           & 01/08/2016    & Parser SAT                      & Luis Sant'Ana                                        \\ \hline
 1.0.1.0           & 04/08/2016    & Bugfixes                        & Luis Sant'Ana                                        \\ \hline
+1.0.1.1           & 30/08/2616    & Arquivos Truncados              & Luis Sant'Ana                                        \\ \hline        
 \end{tabular}
 \end{table}
 
@@ -106,97 +114,132 @@ Este documento tem o objetivo de descrever as alterações nas funcionalidades d
 
 
 \section{Introdução}     
-Nesta versão foi realizado correções encotradas durante o processamento de dados advindos de equipamentos ECF e SAT. Do grupo de ECFs apenas foram corrgidas problemas encontrados nos modelos Daruma e Epson.
+Nesta versão foi adicionado o pré-processamento dos arquivos truncados da impressora Epson. Devido às versões antigas do Coletor alguns arquivos estão truncados no repositório da Amazon, desta forma para não haver a total perda de informações relativas às vendas desses arquivos, foi desenvolvida uma solução parcial que atua no grupo de CNPJs com possibilidade de arquivos truncados. 
 
 \section{O que mudou?}
-
-Nenhuma novidade em relação à versão anterior, apenas correções de \emph{bugs}.
-
-
-\begin{figure}[!ht]
-  \centering
-    \includegraphics[width=1.0\textwidth]{tabela.PNG}
-    \caption{Erro evidenciado}
-    \label{fig:tabela}
-\end{figure}
-
-\begin{figure}[!ht]
-  \centering
-    \includegraphics[width=0.8\textwidth]{cml.PNG}
-  \caption{Trecho do XML com os códigos de pagamento e valores}
-  \label{fig:xml}
-\end{figure}
-
-\subsection{Correções}
-
-\subsubsection{SAT}
-\begin{itemize}
-\item ConsumidorCpfCnpj – Não está sendo apresentado. Correção realizada através da correta captura da tag no arquivo XML.
-\item CupomValorDesconto - Não está apresentando o valor do desconto. Correção realizada através da correta captura da tag no arquivo XML.
-\item ItemCodigo – Está mostrando um número a mais no código. O campo no arquivo XML está vindo um dígito a mais, o problema provavelmente está associado ao software frente caixa e impressora, que não imprime o último digito no cupom fiscal.
-\item ItemValor – O campo ItemValor está sendo apresentado o valor final do item. Correção realizada capturando a tag vUnCom.
-\item FormaPagamento – Não está apresentando o código de pagamento correto. Na figura \ref{fig:xml} está o trecho do arquivo XML que apresenta as formas de pagamento utilizadas da figura \ref{fig:tabela}. Note que é realizada a captura da forma correta, o que sugere que o problema está relacionado a identificação da forma de pagamento, um problema do software de frente de caixa de classifica o tipo de pagamento de forma errada. A seguir está a identificação de cada código de pagamento extraído do manual de especificação técnica de requisitos do SAT~\cite{sat}: 
-
-\begin{itemize}
-\item 01 - Dinheiro
-\item 02 - Cheque
-\item 03 - Cartão de Crédito
-\item 04 - Cartão de Débito
-\item 05 - Crédito Loja
-\item 10 - Vale Alimentação
-\item 11 - Vale Refeição
-\item 12 - Vale Presente
-\item 13 - Vale Combustível
-\item 99 - Outros
-\end{itemize}
-
-\item Valor – Não mostra o valor após o desconto do cupom. Correção realizada através da correta captura da tag no arquivo XML.
-\end{itemize}
-
-\subsubsection{Daruma}
-\begin{itemize}
-\item FormaPagamento – Não está apresentando no código de pagamento Unknown. Correção realizada alterando o comando de abertura de pagamento.
-\item Os cupons que tem pagamentos realizados em mais de uma forma um dos valores vem zerados ou Unknown. A correção do item anterior resolveu também este item.
-\end{itemize}
-
-\subsubsection{Epson}
-\begin{itemize}
-\item ConsumidorCpfCnpj – Em um dos cupons não está sendo apresentado o CPF do consumidor. Neste cupom em especial o campo CPF veio vazio.
-\item O COO não é o mesmo gerado no Cupom impresso. Este problema é um problema persistente das impressoras Epson, detalhado no realease notes da versão 1.0.0.7.
-\item Existe uma venda que não foi efetuada. Problema no arquivo de coleta, este arquivo termina no meio de uma venda e não há arquivo na sequência.
-\end{itemize}
+Foram adicionados dois scripts de processamento na linguagem de programação Perl, que são eles: $process\_threelines.pl$ e $bema2epson.pl$, e também foi alterado o \emph{script} em Python: $processa\_genericos.py$ para realizar as chamadas dos \emph{scripts} para cada arquivo de venda dos CNPJs truncados. 
 
 \section{Limitações}
-Nenhuma limitação a princípio.
+As limitações se encontram em funcionalidades já destacadas em versões anteriores. Nesta versão não deve haver limitações quanto ao pré-processamento dos arquivos truncados.
 
 \section{Como funciona?}
 
-Dentro da estrutura de arquivos (/home/hadoop/Coleta/) existe um arquivo chamado $processa\_genericos.py$, onde pode ser editado o seguinte trecho em amarelo, indicando a faixa de dias a serem processados e o trecho em verde indica o ano e mês.
+Dentro da estrutura de arquivos (/home/hadoop/Coleta/) existe um arquivo chamado $processa\_genericos.py$, 
+no qual podemos selecionar o período de tempo que desejamos processar. Há duas possibilidades para realizar o processamento, através da função $process\_small\_generico\_month()$ apresentada no código numerado \ref{code:meses} onde podemos selecionar o intervalo de meses que desejamos processar, por exemplo, em no código \ref{code:meses} estamos processando dos meses Janeiro à Março (do mês 01 ao 03). Lembrando que o intervalo é semi-aberto $[a,b)$, ou seja, o valor $a$ está incluso e o valor $b$ não está incluso no intervalo. A outra possibilidade de processamento é através da função $process\_small\_generico\_day()$ que processa intervalos dentro de um mesmo mês, neste caso o intervalo é fechado $[a,b]$, onde os extremos a e b são inclusos no intervalo de processamento.    
 
-\begin{figure}[!ht]
-  \centering
-    \includegraphics[width=1.0\textwidth]{genericos.png}
-  \caption{Trecho de código a ser alterado}
-    \label{fig:genericos}
-\end{figure}
+\begin{listing}[H]
+\begin{minted}{python}
+def process_small_generico_month():
+  mesInicial = 01
+  mesFinal = 04
+  ano = 2016
+  for m in xrange(mesInicial, mesFinal):
+    for d in xrange(01, calendar.monthrange(2016,m)[1] + 1):
+       date_to_process = date(ano, m, d)
+       print("INFO: Processando Data: %s" % date_to_process)
+       process_each_cnpj_by_date(date_to_process, GENERICO_INPUT_DIR)
+\end{minted}
+\caption{Processamento de intervalo de meses}
+\label{code:meses}
+\end{listing}
 
-No exemplo da figura~\ref{fig:genericos} uma vez chamdo o $processa\_genericos.py$ pela linha de comando, processará \textbf{somente} o dia 29 do mês 6 de 2016.
 
-Arquivos de logs com extensão \textbf{.log} serão gerados no mesmo diretório para auxiliar em caso de problemas.
+\begin{listing}[H]
+\begin{minted}{python}
+def process_small_generico_day():
+  diaInicial = 01
+  diaFinal = 01
+  mes = 06
+  ano = 2016
+  for d in xrange(diaInicial, diaFinal+1):
+     date_to_process = date(ano, mes, d)
+     print("INFO: Processando Data: %s" % date_to_process)
+     process_each_cnpj_by_date(date_to_process, GENERICO_INPUT_DIR)
+\end{minted}
+\caption{Processamento de intervalo de dias}
+\label{code:dias}
+\end{listing}
 
-O programa digere os dados da pasta \textbf{Cupons/processar (.NS)} e o resultado da digesão dos dados estarão na pasta \textbf{Cupons/processados (.csv, .pag).}.  \footnote{Obs. Sempre que possível cheque se a pasta a ser processada contém os arquivos coletados.}
+
+Arquivos de logs com extensão \textbf{.log} serão gerados no diretório $Coleta$ para auxiliar em caso de problemas. Foram adicionados dois arquivos de log aos existentes para checagem do pré-processamento, os arquivos: $process\_threelines.log$ e o arquivo $bema2epson.log$. 
+
+O resultado do processamento do código $process\_threelines.pl$ pode ser visto no diretório $Genericos/pre$, que são lidos pelo \emph{script} $bema2epson.pl$, este por sua vez gera arquivos na pasta $Genericos/pos$.
+
+O fluxo completo consiste em gerar os arquivos concatenados de um dia, na pasta $Cupons/truncate$, que são processados por $process\_threelines.pl$ e depois processados por $bema2epson.pl$. Por fim, são copiados os arquivos para a pasta \textbf{Cupons/processar} no qual são passados para o digestor processar.
+
+O programa digere os dados da pasta \textbf{Cupons/processar (.NS)} e o resultado da digesão dos dados estarão na pasta \textbf{Cupons/processados (.csv, .pag).}.  \footnote{Obs. Sempre que possível cheque se a pasta a ser processada contém os arquivos coletados.}.
+
+No código apresentado em \ref{code:processamento} a chamada à função $truncate\_conc\_generico()$ caso seja comentada, não realizará o pre-processamento definido nas funções de intervalos de tempo, e os CNPJs definidos no vetor $CNPJ\_Exclude$ não serão processados. 
+ 
+\begin{listing}[H]
+\begin{minted}{python}
+def main():
+    sync()
+    
+    #process_small_generico_month()
+    process_small_generico_day()
+
+    #date_to_process = date.today() - timedelta(days=1)
+    
+    #print("INFO: Processando Data: %s" % date_to_process)
+    
+    #process_each_cnpj_by_date(date_to_process, GENERICO_INPUT_DIR)
+
+    sync()
+    truncate_conc_generico()
+    
+    process_conc_generico()
+\end{minted}
+
+\caption{Adição do pré-processamento}
+\label{code:processamento}
+
+\end{listing}
 
 
+A lista de CNPJs identificados como truncados está apresentada a seguir:
+
+\begin{enumerate}
+\item 14152893000103 
+\item 15352063000184 
+\item 16714499000139
+\item 08976226000134
+\item 12532740000158 
+\item 12928795000181 
+\item 14954187000177 
+\item 60394343000100 
+\item 04949587000130 
+\item 11223033000117
+\item 11237532000163
+\item 16675912000101 
+\item 60740867000105 
+\item 10805439000145
+\item 02523765000131
+\item 12998624000129 
+\item 11122233344455 
+\item 12345678901234
+\item 12426656000102
+\item 18065345000199
+\item 23343955000147
+\item 77777777777777
+\end{enumerate}
+ 
+As maiores frequências de truncamento se devem ao fato de um comando de uma impressora Epson, que apresenta o formato: $\#ACK\#STX\#\{...\}$ vir sem o prefixo $\#ACK$ e se transformar em um comando do tipo Bematech, no formato: $\#STX\#AAA\#AAA\#ESC\{...\}$, onde $\#AAA$ pode ser qualquer comando. Outra frequência alta são quebras de linhas em descrições de itens de venda. Neste caso são perdidos informações relativas ao item, o que pode ocasionar a impossibilidade de carga no banco de dados, através da execução do ETL \emph{(Extract, Transformation and Load)}. Outros casos podem ser identificados, o que acarretará a adição de tratamento para esse novos episódios.  
+
+Em um próximo passo espera-se corrigir os arquivos em definitivo em vez da abordagem utilizando o pré-processamento, neste caso serão reescritos os arquivos da forma correta e realizada a substituição dos dos mesmos no balde do serviço S3 da Amazon. 
 
 \section{Sugestão de testes}
 
 \begin{itemize}
-    \item Reprocessamento dos arquivos de teste, para os equipamentos Daruma e SAT 
-    \item Validação junto ao Banco de Dados.
+    \item Reprocessamento dos meses com arquivos truncados.  
+    \item Carga dos dados no banco de dados através do ETL.
+    \item Validação manual dos arquivos .NS gerados na pasta $Genericos/pos$
 \end{itemize}
 
-\begin{thebibliography}{1}
-  \bibitem{sat} {\em Especificação Técnica de Requisitos - SAT. pag. 96}  2016.
-\end{thebibliography}
+
+
+%\begin{thebibliography}{1}
+%  \bibitem{sat} {\em Especificação Técnica de Requisitos - SAT. pag. 96}  2016.
+%\end{thebibliography}
 
 \end{document}               % End of document.
