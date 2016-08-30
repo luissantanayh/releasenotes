@@ -102,7 +102,7 @@
 1.0.0.8           & 29/07/2016    & Bugfixes                        & Yandeh Team                                          \\ \hline
 1.0.0.9           & 01/08/2016    & Parser SAT                      & Luis Sant'Ana                                        \\ \hline
 1.0.1.0           & 04/08/2016    & Bugfixes                        & Luis Sant'Ana                                        \\ \hline
-1.0.1.1           & 30/08/2616    & Arquivos Truncados              & Luis Sant'Ana                                        \\ \hline        
+1.0.1.1           & 30/08/2616    & Arquivos truncados e aglutinados              & Luis Sant'Ana                                        \\ \hline        
 \end{tabular}
 \end{table}
 
@@ -114,13 +114,13 @@ Este documento tem o objetivo de descrever as alterações nas funcionalidades d
 
 
 \section{Introdução}     
-Nesta versão foi adicionado o pré-processamento dos arquivos truncados da impressora Epson. Devido às versões antigas do Coletor alguns arquivos estão truncados no repositório da Amazon, desta forma para não haver a total perda de informações relativas às vendas desses arquivos, foi desenvolvida uma solução parcial que atua no grupo de CNPJs com possibilidade de arquivos truncados. 
+Nesta versão foi adicionado o pré-processamento dos arquivos truncados da impressora Epson e os arquivos Daruma aglutinados. Devido às versões antigas do Coletor alguns arquivos estão truncados no repositório da Amazon, desta forma para não haver a total perda de informações relativas às vendas desses arquivos, foi desenvolvida uma solução parcial que atua no grupo de CNPJs com possibilidade de arquivos truncados. A outra solução implementada soluciona a questão de aglutinação dos comandos Daruma, gerados pela versão 3.0.1.8 do software Coletor EFC.
 
 \section{O que mudou?}
-Foram adicionados dois scripts de processamento na linguagem de programação Perl, que são eles: $process\_threelines.pl$ e $bema2epson.pl$, e também foi alterado o \emph{script} em Python: $processa\_genericos.py$ para realizar as chamadas dos \emph{scripts} para cada arquivo de venda dos CNPJs truncados. 
+Foram adicionados quatro scripts de processamento na linguagem de programação Perl, que são eles: $process\_threelines.pl$, $bema2epson.pl$, $precess\_daruma.pl$ e $trataDaruma.pl$, também foi alterado o \emph{script} em Python: $processa\_genericos.py$ para realizar as chamadas dos \emph{scripts} para cada arquivo de venda dos CNPJs truncados e/ou aglutinados. 
 
 \section{Limitações}
-As limitações se encontram em funcionalidades já destacadas em versões anteriores. Nesta versão não deve haver limitações quanto ao pré-processamento dos arquivos truncados.
+As limitações se encontram em funcionalidades já destacadas em versões anteriores. Nesta versão não deve haver limitações quanto ao pré-processamento dos arquivos truncados e aglutinados.
 
 \section{Como funciona?}
 
@@ -161,15 +161,15 @@ def process_small_generico_day():
 \end{listing}
 
 
-Arquivos de logs com extensão \textbf{.log} serão gerados no diretório $Coleta$ para auxiliar em caso de problemas. Foram adicionados dois arquivos de log aos existentes para checagem do pré-processamento, os arquivos: $process\_threelines.log$ e o arquivo $bema2epson.log$. 
+Arquivos de logs com extensão \textbf{.log} serão gerados no diretório $Coleta$ para auxiliar em caso de problemas. Foram adicionados dois arquivos de log aos existentes no caso dos arquivos truncados, para checagem do pré-processamento, os arquivos: $process\_threelines.log$ e o arquivo $bema2epson.log$. Para os arquivos algutinados foram adicionados os arquivos $trata_daruma.log$ e $process_daruma.log$. 
 
-O resultado do processamento do código $process\_threelines.pl$ pode ser visto no diretório $Genericos/pre$, que são lidos pelo \emph{script} $bema2epson.pl$, este por sua vez gera arquivos na pasta $Genericos/pos$.
+O resultado do processamento do código $process\_threelines.pl$ pode ser visto no diretório $Genericos/pre$, que são lidos pelo \emph{script} $bema2epson.pl$, este por sua vez gera arquivos na pasta $Genericos/pos$. Da mesma forma o resultado do processamento gerado por $trataDaruma.pl$ pode ser visto na pasta $Genericos/trata_daruma$ e o resultado de $process_daruma.pl$ pode ser visto em $Genericos/process_daruma$.
 
-O fluxo completo consiste em gerar os arquivos concatenados de um dia, na pasta $Cupons/truncate$, que são processados por $process\_threelines.pl$ e depois processados por $bema2epson.pl$. Por fim, são copiados os arquivos para a pasta \textbf{Cupons/processar} no qual são passados para o digestor processar.
+O fluxo completo consiste em gerar os arquivos concatenados de um dia, na pasta $Cupons/truncate$, que são processados por $process\_threelines.pl$ e depois processados por $bema2epson.pl$. Por fim, são copiados os arquivos para a pasta \textbf{Cupons/processar} no qual são passados para o digestor processar. De forma similar, o mesmo ocorre com o processo de aglutinação dos arquivos Daruma, alterando os scripts de excução e as pastas temporárias.
 
 O programa digere os dados da pasta \textbf{Cupons/processar (.NS)} e o resultado da digesão dos dados estarão na pasta \textbf{Cupons/processados (.csv, .pag).}.  \footnote{Obs. Sempre que possível cheque se a pasta a ser processada contém os arquivos coletados.}.
 
-No código apresentado em \ref{code:processamento} a chamada à função $truncate\_conc\_generico()$ caso seja comentada, não realizará o pre-processamento definido nas funções de intervalos de tempo, e os CNPJs definidos no vetor $CNPJ\_Exclude$ não serão processados. 
+No código apresentado em \ref{code:processamento} a chamada à função $truncate\_conc\_generico()$ caso seja comentada, não realizará o pre-processamento definido nas funções de intervalos de tempo, e os CNPJs definidos no dicionário $CNPJ\_Exclude$ não serão processados. De forma análago, a função     $aglutinate\_conc\_generico()$ realiza o processamento dos CNPJs inclusos no dicionário $CNPJ_daruma$.
  
 \begin{listing}[H]
 \begin{minted}{python}
@@ -187,7 +187,7 @@ def main():
 
     sync()
     truncate_conc_generico()
-    
+    aglutinate_conc_generico()
     process_conc_generico()
 \end{minted}
 
@@ -214,7 +214,6 @@ A lista de CNPJs identificados como truncados está apresentada a seguir:
 \item 16675912000101 
 \item 60740867000105 
 \item 10805439000145
-\item 02523765000131
 \item 12998624000129 
 \item 11122233344455 
 \item 12345678901234
@@ -223,17 +222,21 @@ A lista de CNPJs identificados como truncados está apresentada a seguir:
 \item 23343955000147
 \item 77777777777777
 \end{enumerate}
- 
+
+
 As maiores frequências de truncamento se devem ao fato de um comando de uma impressora Epson, que apresenta o formato: $\#ACK\#STX\#\{...\}$ vir sem o prefixo $\#ACK$ e se transformar em um comando do tipo Bematech, no formato: $\#STX\#AAA\#AAA\#ESC\{...\}$, onde $\#AAA$ pode ser qualquer comando. Outra frequência alta são quebras de linhas em descrições de itens de venda. Neste caso são perdidos informações relativas ao item, o que pode ocasionar a impossibilidade de carga no banco de dados, através da execução do ETL \emph{(Extract, Transformation and Load)}. Outros casos podem ser identificados, o que acarretará a adição de tratamento para esse novos episódios.  
 
 Em um próximo passo espera-se corrigir os arquivos em definitivo em vez da abordagem utilizando o pré-processamento, neste caso serão reescritos os arquivos da forma correta e realizada a substituição dos dos mesmos no balde do serviço S3 da Amazon. 
 
+Para os arquivos aglutinados apenas há uma constatação de aglutinação dos comandos, encontrados no CNPJ: \textbf{02523765000131}.
+
+
 \section{Sugestão de testes}
 
 \begin{itemize}
-    \item Reprocessamento dos meses com arquivos truncados.  
+    \item Reprocessamento dos meses com arquivos truncados e aglutinados.  
     \item Carga dos dados no banco de dados através do ETL.
-    \item Validação manual dos arquivos .NS gerados na pasta $Genericos/pos$
+    \item Validação manual dos arquivos .NS gerados na pasta $Genericos/pos$ e $Genericos/process\_daruma$
 \end{itemize}
 
 
