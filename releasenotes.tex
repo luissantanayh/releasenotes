@@ -37,7 +37,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %ALTERAR AQUI A VERSÃO DO DIGESTOR!!!!!
-\newcommand{\versiondigester}{v1.0.1.1}
+\newcommand{\versiondigester}{v1.0.1.2}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Header and footer commands
@@ -102,7 +102,8 @@
 1.0.0.8           & 29/07/2016    & Bugfixes                        & Yandeh Team                                          \\ \hline
 1.0.0.9           & 01/08/2016    & Parser SAT                      & Luis Sant'Ana                                        \\ \hline
 1.0.1.0           & 04/08/2016    & Bugfixes                        & Luis Sant'Ana                                        \\ \hline
-1.0.1.1           & 30/08/2616    & Arquivos truncados e aglutinados              & Luis Sant'Ana                                        \\ \hline        
+1.0.1.1           & 30/08/2616    & Arquivos truncados e aglutinados              & Luis Sant'Ana                          \\ \hline
+1.0.1.2           & 05/09/2616    & Bugfixes                        & Luis Sant'Ana                                         \\ \hline
 \end{tabular}
 \end{table}
 
@@ -110,17 +111,36 @@
 
 \section{Objetivos}
 
-Este documento tem o objetivo de descrever as alterações nas funcionalidades do Digester para a versão \versiondigester. 
+Este documento tem o objetivo de corrigir bugs do Digester para a versão anterior v1.0.1.1. 
 
 
 \section{Introdução}     
-Nesta versão foi adicionado o pré-processamento dos arquivos truncados da impressora Epson e os arquivos Daruma aglutinados. Devido às versões antigas do Coletor alguns arquivos estão truncados no repositório da Amazon, desta forma para não haver a total perda de informações relativas às vendas desses arquivos, foi desenvolvida uma solução parcial que atua no grupo de CNPJs com possibilidade de arquivos truncados. A outra solução implementada soluciona a questão de aglutinação dos comandos Daruma, gerados pela versão 3.0.1.8 do software Coletor EFC.
+Nesta versão foram corrigidos \emph{bugs} relativos a funcionalidade de truncamento de arquivos Epson. A funcionalidade de correção de arquivos aglutinados Daruma foi removida, devido a complexidade relacionada a solução de todos os possíveis casos, o que acarreta esforço demasiado, o que não compensa devido à baixa incidência.
 
 \section{O que mudou?}
-Foram adicionados quatro scripts de processamento na linguagem de programação Perl, que são eles: $process\_threelines.pl$, $bema2epson.pl$, $precess\_daruma.pl$ e $trataDaruma.pl$, também foi alterado o \emph{script} em Python: $processa\_genericos.py$ para realizar as chamadas dos \emph{scripts} para cada arquivo de venda dos CNPJs truncados e/ou aglutinados. 
+Foram removidos os \emph{scripts} relacionados ao processsamento de arquivos Daruma e foram corrigidos \emph{bugs} encontrados, relacionados aos arquivos truncados.
+
+\section{Lista de Bugs encontrados}
+\subsection{Registro de inconsistências}
+\begin{enumerate}
+    \item \emph{Primeira linha do registro foi registrada de forma não esperada:} Este tipo de situação é comum e esperada nos arquivos \textbf{.NS}, e não traz prejuízo na captura de informações pelo digestor, devido a quebra dos arquivos em dias. 
+    \item \emph{As últimas linhas foram finalizadas de forma não esperada:} Da mesma forma que o item anterior este tipo de caso é comum e não tem impacto sobre a capacidade de processamento do digestor.
+\end{enumerate}
+
+\subsection{\emph{Issues}}
+\begin{enumerate}
+    \item \emph{Nome do arquivo não apresenta a extenção .NS}. Questão não identificada, o arquivo em questão está com a extensão na pasta \emph{pos}. Além de este caso não ter impacto no processamento do digestor.
+    \item \emph{Vir um número zero em resposta a um comando:} Este tipo de resposta é comum e não tem impacto sobre o processamento.
+    \item \emph{Início da linha com números:} Resposta comum da impressora, sem prejuízo de informações.
+    \item \emph{Truncamento de rodapé de cupom:} Tratamento realizado através da modificação da regex para capturar a linha.
+    \item \emph{Início da linha com números:} Resposta comum da impressora, sem prejuízo de informações.
+    \item \emph{Quebra de linha em comando $\#ACK$}: Tratamento de realizado através da modificação de regex.
+    \item \emph{Outros casos não listados}: vários outros casos foram identificados, o que não foi listado aqui, pois se enquadra em um dos casos anteriores.
+\end{enumerate}
+
 
 \section{Limitações}
-As limitações se encontram em funcionalidades já destacadas em versões anteriores. Nesta versão não deve haver limitações quanto ao pré-processamento dos arquivos truncados e aglutinados.
+As limitações se encontram em funcionalidades já destacadas em versões anteriores. Nesta versão não deve haver limitações quanto ao pré-processamento dos arquivos truncados Epson.
 
 \section{Como funciona?}
 
@@ -161,15 +181,15 @@ def process_small_generico_day():
 \end{listing}
 
 
-Arquivos de logs com extensão \textbf{.log} serão gerados no diretório $Coleta$ para auxiliar em caso de problemas. Foram adicionados dois arquivos de log aos existentes no caso dos arquivos truncados, para checagem do pré-processamento, os arquivos: $process\_threelines.log$ e o arquivo $bema2epson.log$. Para os arquivos algutinados foram adicionados os arquivos $trata_daruma.log$ e $process_daruma.log$. 
+Arquivos de logs com extensão \textbf{.log} serão gerados no diretório $Coleta$ para auxiliar em caso de problemas. Foram adicionados dois arquivos de log aos existentes no caso dos arquivos truncados, para checagem do pré-processamento, os arquivos: $process\_threelines.log$ e o arquivo $bema2epson.log$. Nesta versão, as linhas modificadas são escritas nos arquivos de $log$ em formato JSON. 
 
-O resultado do processamento do código $process\_threelines.pl$ pode ser visto no diretório $Genericos/pre$, que são lidos pelo \emph{script} $bema2epson.pl$, este por sua vez gera arquivos na pasta $Genericos/pos$. Da mesma forma o resultado do processamento gerado por $trataDaruma.pl$ pode ser visto na pasta $Genericos/trata_daruma$ e o resultado de $process_daruma.pl$ pode ser visto em $Genericos/process_daruma$.
+O resultado do processamento do código $process\_threelines.pl$ pode ser visto no diretório $Genericos/pre$, que são lidos pelo \emph{script} $bema2epson.pl$, este por sua vez gera arquivos na pasta $Genericos/pos$. 
 
-O fluxo completo consiste em gerar os arquivos concatenados de um dia, na pasta $Cupons/truncate$, que são processados por $process\_threelines.pl$ e depois processados por $bema2epson.pl$. Por fim, são copiados os arquivos para a pasta \textbf{Cupons/processar} no qual são passados para o digestor processar. De forma similar, o mesmo ocorre com o processo de aglutinação dos arquivos Daruma, alterando os scripts de excução e as pastas temporárias.
+O fluxo completo consiste em gerar os arquivos concatenados de um dia, na pasta $Cupons/truncate$, que são processados por $process\_threelines.pl$ e depois processados por $bema2epson.pl$. Por fim, são copiados os arquivos para a pasta \textbf{Cupons/processar} no qual são passados para o digestor processar. 
 
-O programa digere os dados da pasta \textbf{Cupons/processar (.NS)} e o resultado da digesão dos dados estarão na pasta \textbf{Cupons/processados (.csv, .pag).}.  \footnote{Obs. Sempre que possível cheque se a pasta a ser processada contém os arquivos coletados.}.
+O programa digere os dados da pasta \textbf{Cupons/processar (.NS)} e o resultado da digesão dos dados estarão na pasta \textbf{Output (.csv, .pag).}.  \footnote{Obs. Sempre que possível cheque se a pasta a ser processada contém os arquivos coletados.}.
 
-No código apresentado em \ref{code:processamento} a chamada à função $truncate\_conc\_generico()$ caso seja comentada, não realizará o pre-processamento definido nas funções de intervalos de tempo, e os CNPJs definidos no dicionário $CNPJ\_Exclude$ não serão processados. De forma análago, a função     $aglutinate\_conc\_generico()$ realiza o processamento dos CNPJs inclusos no dicionário $CNPJ_daruma$.
+No código apresentado em \ref{code:processamento} a chamada à função $truncate\_conc\_generico()$ caso seja comentada, não realizará o pre-processamento definido nas funções de intervalos de tempo, e os CNPJs definidos no dicionário $CNPJ\_Exclude$ não serão processados.
  
 \begin{listing}[H]
 \begin{minted}{python}
@@ -187,7 +207,6 @@ def main():
 
     sync()
     truncate_conc_generico()
-    aglutinate_conc_generico()
     process_conc_generico()
 \end{minted}
 
@@ -228,15 +247,13 @@ As maiores frequências de truncamento se devem ao fato de um comando de uma imp
 
 Em um próximo passo espera-se corrigir os arquivos em definitivo em vez da abordagem utilizando o pré-processamento, neste caso serão reescritos os arquivos da forma correta e realizada a substituição dos dos mesmos no balde do serviço S3 da Amazon. 
 
-Para os arquivos aglutinados apenas há uma constatação de aglutinação dos comandos, encontrados no CNPJ: \textbf{02523765000131}.
-
 
 \section{Sugestão de testes}
 
 \begin{itemize}
-    \item Reprocessamento dos meses com arquivos truncados e aglutinados.  
+    \item Reprocessamento dos meses com arquivos truncados. 
     \item Carga dos dados no banco de dados através do ETL.
-    \item Validação manual dos arquivos .NS gerados na pasta $Genericos/pos$ e $Genericos/process\_daruma$
+    \item Validação manual dos arquivos .NS gerados na pasta $Genericos/pos$.
 \end{itemize}
 
 
